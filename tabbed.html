@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practicing the Conversion — tabbed workbook</title>
+<style>
+  :root{
+    --ink:#1f2430; --paper:#fdfcf9; --card:#ffffff;
+    --passive:#f3e8e2; --passive-edge:#c9a394;
+    --active:#e3efe6; --active-edge:#7fa98c;
+    --accent:#5b7c99; --accent-soft:#dce8f2;
+    --gold:#e9dfc8; --rose:#f2e2e8; --lav:#e6e2f2;
+    --warn:#b25d4c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;background:var(--paper);color:var(--ink);line-height:1.6;font-size:18px}
+  .wrap{max-width:980px;margin:0 auto;padding:28px 20px 80px}
+  header{text-align:center;padding:38px 16px 26px}
+  header h1{font-size:2.3em;font-weight:800;letter-spacing:-.5px}
+  header .sub{font-size:1.15em;color:#4a5568;max-width:760px;margin:14px auto 0}
+  header .series{margin-top:10px;font-size:.95em;color:#6b7280}
+  .bridge{background:var(--accent-soft);border-left:8px solid var(--accent);border-radius:10px;padding:22px 26px;margin:26px 0;font-size:1.12em}
+  .bridge strong{color:#31506b}
+  h2.sec{font-size:1.55em;font-weight:800;margin:44px 0 8px;color:#31506b}
+  p.secintro{color:#4a5568;margin-bottom:18px}
+
+  /* four moves */
+  .moves{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:18px 0 6px}
+  .move{border-radius:12px;padding:16px 18px;cursor:pointer;border:2px solid transparent;transition:.15s}
+  .move:hover{transform:translateY(-2px)}
+  .move.open{border-color:var(--ink)}
+  .move h3{font-size:1.08em;margin-bottom:4px}
+  .move .q{display:none;font-size:.95em;margin-top:8px;font-style:italic}
+  .move.open .q{display:block}
+  .m1{background:var(--gold)} .m2{background:var(--rose)} .m3{background:var(--lav)} .m4{background:var(--active)}
+  .hint{font-size:.92em;color:#6b7280;margin:6px 0 0}
+
+  /* filters */
+  .filters{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 22px}
+  .fbtn{font-family:inherit;font-size:1em;font-weight:700;padding:10px 18px;border-radius:999px;border:2px solid #9db2c4;background:#fff;color:#31506b;cursor:pointer}
+  .fbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+  /* conversion cards */
+  .pair{background:var(--card);border:1px solid #e2e0d8;border-radius:14px;padding:0;margin-bottom:18px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+  .pair .dom{display:inline-block;font-size:.82em;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 12px;border-radius:999px;margin:16px 0 0 18px;background:var(--accent-soft);color:#31506b}
+  .voice{padding:16px 20px;position:relative}
+  .voice .label{font-size:.85em;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px}
+  .pv{background:var(--passive);border-left:8px solid var(--passive-edge);margin:14px 18px 0;border-radius:8px}
+  .pv .label{color:#8a5a46}
+  .av{background:var(--active);border-left:8px solid var(--active-edge);margin:12px 18px 16px;border-radius:8px;display:none}
+  .av .label{color:#3f6b4f}
+  .pair.converted .av{display:block}
+  .convertbar{display:flex;align-items:center;gap:12px;padding:10px 18px 16px;flex-wrap:wrap}
+  .cbtn{font-family:inherit;font-size:1em;font-weight:800;padding:10px 20px;border-radius:10px;border:none;cursor:pointer;background:var(--accent);color:#fff}
+  .pair.converted .cbtn{background:#fff;color:var(--accent);border:2px solid var(--accent)}
+  .badges{display:none;gap:8px;flex-wrap:wrap}
+  .pair.converted .badges{display:flex}
+  .badge{font-size:.82em;font-weight:800;padding:5px 12px;border-radius:999px}
+  .b1{background:var(--gold)} .b2{background:var(--rose)} .b3{background:var(--lav)} .b4{background:var(--active);border:1px solid var(--active-edge)}
+  .note{display:none;padding:0 20px 18px;font-size:.97em;color:#4a5568;font-style:italic}
+  .pair.converted .note{display:block}
+  .allbar{margin:4px 0 18px}
+
+  /* try it */
+  .try{background:var(--card);border:1px solid #e2e0d8;border-radius:14px;padding:24px;margin-top:8px}
+  .try label{display:block;font-weight:800;margin:16px 0 6px;color:#31506b}
+  .try input,.try textarea{width:100%;font-family:inherit;font-size:1em;padding:12px 14px;border:2px solid #cbd5e1;border-radius:10px;background:#fff;color:var(--ink)}
+  .try textarea{min-height:80px;resize:vertical}
+  .try .qsmall{font-weight:400;font-size:.92em;color:#6b7280;font-style:italic}
+  .assemble{margin-top:20px;background:var(--active);border-left:8px solid var(--active-edge);border-radius:8px;padding:16px 18px;font-size:1.08em;display:none}
+  .try .cbtn{margin-top:18px}
+  .privacy{font-size:.88em;color:#8a8f98;margin-top:10px}
+
+  /* minute audit */
+  .audit{background:var(--card);border:1px solid #e2e0d8;border-radius:14px;padding:24px}
+  .audit textarea{width:100%;font-family:inherit;font-size:1em;padding:12px 14px;border:2px solid #cbd5e1;border-radius:10px;min-height:100px;resize:vertical}
+  .checks{margin-top:16px;display:grid;gap:10px}
+  .checks label{display:flex;gap:12px;align-items:flex-start;font-size:1em;background:#faf9f5;border-radius:10px;padding:12px 14px;cursor:pointer}
+  .checks input{width:22px;height:22px;margin-top:3px;flex-shrink:0}
+  .verdict{margin-top:16px;font-weight:800;font-size:1.1em;padding:14px 18px;border-radius:10px;background:var(--passive)}
+  .verdict.good{background:var(--active)}
+
+  /* resources */
+  .res{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+  .rcard{border-radius:14px;padding:20px;cursor:pointer;border:2px solid transparent;transition:.15s}
+  .rcard:hover{transform:translateY(-2px)}
+  .rcard.open{border-color:var(--ink)}
+  .rcard h3{font-size:1.15em;margin-bottom:6px}
+  .rcard .tag{font-size:.85em;font-weight:700;color:#4a5568}
+  .rcard .body{display:none;margin-top:10px;font-size:.97em}
+  .rcard.open .body{display:block}
+  .r1{background:var(--gold)} .r2{background:var(--active)} .r3{background:var(--accent-soft)} .r4{background:var(--lav)} .r5{background:var(--rose)}
+
+  .closing{margin-top:48px;text-align:center;background:var(--accent-soft);border-radius:14px;padding:30px 24px;font-size:1.25em;font-weight:700;color:#31506b}
+  .closing .small{font-size:.75em;font-weight:400;margin-top:10px;color:#4a5568}
+  @media (max-width:640px){body{font-size:16px} header h1{font-size:1.7em}}
+
+  /* tabs */
+  nav.tabs{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:2px solid #e2e0d8;margin:0 -20px;padding:8px 20px 0}
+  .tablist{display:flex;flex-wrap:wrap;gap:2px 4px}
+  .tab{font-family:inherit;font-size:.92em;font-weight:700;padding:10px 12px;border:none;border-bottom:4px solid transparent;background:none;color:#4a5568;cursor:pointer;white-space:nowrap}
+  .tab:hover{color:var(--ink)}
+  .tab[aria-selected="true"]{color:#31506b;border-bottom-color:var(--accent)}
+  .tab:focus-visible,.fbtn:focus-visible,.cbtn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  .panel{padding-top:8px}
+  .panel[hidden]{display:none}
+  .panel h2.sec{margin-top:26px}
+  .stepnav{display:flex;justify-content:space-between;gap:12px;margin-top:36px;flex-wrap:wrap}
+  .stepnav .fbtn[disabled]{visibility:hidden}
+  .intro-map{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));align-items:stretch;gap:12px;margin-top:22px}
+  .intro-map button{font-family:inherit;text-align:left;display:flex;flex-direction:column;justify-content:flex-start;gap:4px;font-size:1em;background:var(--card);border:1px solid #e2e0d8;border-radius:12px;padding:14px 16px;cursor:pointer;color:var(--ink)}
+  .intro-map button:hover{border-color:var(--accent)}
+  .intro-map b{display:block;color:#31506b}
+  .intro-map span{font-size:.9em;color:#4a5568}
+  @media (max-width:640px){.tab{font-size:.88em;padding:9px 10px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Practicing the Conversion</h1>
+  <div class="sub">An accurate historical and materialist analysis requires a grammatical conversion: from the passive voice of <em>"what did not reach us"</em> to the restored agency of <em>"what was actively withheld."</em> This workbook makes the conversion a practice.</div>
+  <div class="series">From the First Nation-Farmer Climate Unity March project &middot; Jeff Kisling</div>
+</header>
+
+<nav class="tabs" aria-label="Workbook sections"><div class="tablist" role="tablist" id="tablist"></div></nav>
+
+<section class="panel" id="p-intro" data-title="Introduction">
+<div class="bridge">
+  The passive constructions in which settlers learned this history are not accidents of style — <strong>they are the finished product of the withholding, the grammar the silence was designed to produce.</strong> Converting them, sentence by sentence, is learnable work. And the conversion is not complete until the resources move.
+</div>
+
+<p class="secintro" style="margin-top:22px">Work through the sections in order, or jump to any of them:</p>
+<div class="intro-map" id="intro-map"></div>
+</section>
+
+<section class="panel" id="p-moves" data-title="The Four Moves" hidden>
+<h2 class="sec">The Four Moves</h2>
+<p class="secintro">Every conversion does the same four things. Click each move to see the question that forces it.</p>
+<div class="moves">
+  <div class="move m1" onclick="this.classList.toggle('open')">
+    <h3>1 &middot; Name an agent</h3>
+    The passive sentence has no subject; the active sentence requires one. "Mistakes were made" is the eternal grammar of the unaccountable.
+    <div class="q">Who did this, and who carries their name now?</div>
+  </div>
+  <div class="move m2" onclick="this.classList.toggle('open')">
+    <h3>2 &middot; Locate a mechanism</h3>
+    Withholding was implemented — by statute, policy, budget, curriculum, court decision. Mechanisms outlive intentions.
+    <div class="q">By what instrument was this done, and is the instrument still in operation?</div>
+  </div>
+  <div class="move m3" onclick="this.classList.toggle('open')">
+    <h3>3 &middot; Keep the present tense</h3>
+    "Was taken" sounds finished; "is held" tells the truth. The land is still farmed, the endowment still compounds.
+    <div class="q">Where is the value now?</div>
+  </div>
+  <div class="move m4" onclick="this.classList.toggle('open')">
+    <h3>4 &middot; Place yourself in the sentence</h3>
+    Not as villain, but as position: member, inheritor, beneficiary, neighbor. Without a speaker, it is still a history lecture.
+    <div class="q">Where am I standing in this sentence?</div>
+  </div>
+</div>
+<p class="hint">Tap a move to reveal its question.</p>
+
+</section>
+
+<section class="panel" id="p-conversions" data-title="The Conversions" hidden>
+<h2 class="sec">The Conversions</h2>
+<p class="secintro">Each card begins in the passive voice — the sentence as it was taught. Press <strong>Convert</strong> to restore the agent, the mechanism, the tense, and the speaker. The badges show which moves the passive version was avoiding.</p>
+<div class="filters" id="filters"></div>
+<div class="allbar"><button class="fbtn" onclick="convertAll(true)">Convert all</button> <button class="fbtn" onclick="convertAll(false)">Reset all</button></div>
+<div id="pairs"></div>
+
+</section>
+
+<section class="panel" id="p-try" data-title="Try It Yourself" hidden>
+<h2 class="sec">Try It Yourself</h2>
+<p class="secintro">Take a passive sentence you have said or written — about this history, your town, your church, your family's land — and pass it through the four questions.</p>
+<div class="try">
+  <label>The passive sentence, as you learned it</label>
+  <textarea id="t0" placeholder="e.g., The prairie was lost long ago."></textarea>
+  <label>1 &middot; Agent <span class="qsmall">— who did this, and who carries their name now?</span></label>
+  <input id="t1" placeholder="e.g., settlers and the railroads, whose plat maps still name our county roads">
+  <label>2 &middot; Mechanism <span class="qsmall">— by what instrument, and is it still in operation?</span></label>
+  <input id="t2" placeholder="e.g., the Homestead Act and the drainage districts, which still govern the water">
+  <label>3 &middot; Present tense <span class="qsmall">— where is the value now?</span></label>
+  <input id="t3" placeholder="e.g., in the yields of the fields that replaced it, harvested every fall">
+  <label>4 &middot; Yourself <span class="qsmall">— where are you standing in this sentence?</span></label>
+  <input id="t4" placeholder="e.g., I grew up on those yields, and I am writing this on that land">
+  <button class="cbtn" onclick="assemble()">Assemble the active sentence</button>
+  <div class="assemble" id="assembled"></div>
+  <p class="privacy">Nothing you type here is saved or sent anywhere; it lives only on this page while it is open.</p>
+</div>
+
+</section>
+
+<section class="panel" id="p-audit" data-title="Meeting-Minute Audit" data-short="Minute Audit" hidden>
+<h2 class="sec">The Meeting-Minute Audit</h2>
+<p class="secintro">Institutions also speak in the passive voice, and their minutes are where the grammar hides. Paste (or recall) a land acknowledgment or a minute, then check what it actually contains. An acknowledgment with all four is a commitment. An acknowledgment with none is the old silence, upgraded.</p>
+<div class="audit">
+  <textarea placeholder='e.g., "We acknowledge that this land was taken from Native peoples."'></textarea>
+  <div class="checks">
+    <label><input type="checkbox" onchange="verdict()"> <span><strong>Agent:</strong> it names who took, and who holds — not "was taken" but "the United States took, and the meeting holds title under that taking."</span></label>
+    <label><input type="checkbox" onchange="verdict()"> <span><strong>Mechanism:</strong> it names the instrument — the treaty, the statute, the court decision, the curriculum.</span></label>
+    <label><input type="checkbox" onchange="verdict()"> <span><strong>Present tense:</strong> it says where the value is now, not only what happened then.</span></label>
+    <label><input type="checkbox" onchange="verdict()"> <span><strong>A commitment:</strong> it ends in a line item — the honor tax, the work days, the funding decision — not a feeling.</span></label>
+  </div>
+  <div class="verdict" id="verdict">0 of 4 — this is the old silence, upgraded.</div>
+</div>
+
+</section>
+
+<section class="panel" id="p-resources" data-title="The Resources" hidden>
+<h2 class="sec">The Resources Follow the Sentence</h2>
+<p class="secintro">If the history merely "did not reach us," learning it completes the repair and the journey ends in a feeling. But if land, children, language, and truth were actively withheld — taken, with the value banked — then learning is only the audit, and the repair is the return. Five forms. Tap each.</p>
+<div class="res">
+  <div class="rcard r1" onclick="this.classList.toggle('open')">
+    <h3>Money</h3><div class="tag">The plainest form, and the most postponed</div>
+    <div class="body">A recurring gift to Indigenous-led organizations — a budget line that renews without being re-argued. An honor tax paid voluntarily to the nation whose land you live on. A meeting or yearly meeting moving funds toward Indigenous-led work as obligation, not charity. The test is Alvin's question from the Kheprw Institute: <em>what actually changed?</em> A conscience is not a change. A transfer is.</div>
+  </div>
+  <div class="rcard r2" onclick="this.classList.toggle('open')">
+    <h3>Land</h3><div class="tag">Returned, directed, or opened</div>
+    <div class="body">Returned outright where possible; placed under Indigenous direction where not; opened without conditions where neither is yet possible. The Decolonial Repair Network's acre in Iowa City is a working example: land acquired to support the Great Plains Action Society, with settlers supplying labor and money under Indigenous leadership — the entire grammar of repair on one small parcel.</div>
+  </div>
+  <div class="rcard r3" onclick="this.classList.toggle('open')">
+    <h3>Labor</h3><div class="tag">The return available to everyone</div>
+    <div class="body">Week after week, under Indigenous direction, at the tasks the led community names: work days at the Urban Resilience Hub, Saturday mornings at the mutual aid tables, the wheelbarrow rather than the workshop. Labor carries what money cannot — time, which is the medium every channel is built from.</div>
+  </div>
+  <div class="rcard r4" onclick="this.classList.toggle('open')">
+    <h3>Institutional weight</h3><div class="tag">A meeting's, a church's, a family's</div>
+    <div class="body">Minutes that name the taking in the active voice and attach a commitment. Testimony at the Iowa Utilities Board when the next company comes for the next easement. Funding decisions made in consultation with the Native communities concerned. A congregation's platform — pulpit, newsletter, website — handed over so Indigenous voices reach the people those institutions still command.</div>
+  </div>
+  <div class="rcard r5" onclick="this.classList.toggle('open')">
+    <h3>Story &amp; platform</h3><div class="tag">The lightest resource, the strictest rule</div>
+    <div class="body">Authority over a story stays with its teller — the lesson Foxy Onefeather taught unforgettably. Amplify under permission; link rather than paraphrase; let the museum-curator instinct die. A website is a return only insofar as it carries people to the sources and leaves the ownership where it was.</div>
+  </div>
+</div>
+
+<div class="closing">
+  The sentence comes first. The resources follow the sentence.
+  <div class="small">A taking has a taker, a taker has holdings, and holdings can move — the only grammar of repair that the history itself will recognize.</div>
+</div>
+</section>
+
+</div>
+<script>
+const DATA = [
+ {d:"The Land", p:"Iowa was opened to settlement in the 1830s and 1840s.",
+  a:"The United States forced the Sauk and Meskwaki and Ioway from Iowa through coerced treaties following the Black Hawk War, and sold their land to settlers — including the families whose farms I grew up among. The land is held under that taking today.",
+  m:[1,2,3,4], n:"The passive version was avoiding all four moves at once — 'opened' has no opener."},
+ {d:"The Land", p:"The pipeline was built across Iowa despite objections.",
+  a:"The Iowa Utilities Board granted a Texas company the power of eminent domain, and the company took easements across the farms of unwilling owners — Keith Puntenney among them — compacted their soil, cut their drainage tile, and reduced their yields. The oil is flowing through the taking now, and the company collects revenue on it every day.",
+  m:[1,2,3], n:"Agent, instrument, and the present tense of the profit."},
+ {d:"The Land", p:"The Meskwaki returned to Iowa in the 1850s.",
+  a:"The Meskwaki bought back a piece of their own homeland with their own money in 1857 — a purchase, not a grant — and built the Settlement that stands near Tama today.",
+  m:[1,3], n:"The exception that proves the grammar: the return happened in the active voice, and the actors were Meskwaki."},
+ {d:"Children & Schools", p:"Native children were sent to boarding schools, where many suffered.",
+  a:"Churches and the federal government took Native children from their families — Quakers operated some of the schools, including White's Manual Labor Institute in Wabash, Indiana — cut their hair, forbade their languages, and worked them, under a policy whose stated purpose was to destroy what their families would have given them.",
+  m:[1,2,4], n:"'Were sent' hides the taker; naming Quaker operation places the speaker's own church in the sentence."},
+ {d:"Children & Schools", p:"Zitkála-Šá's braid was cut when she was eight.",
+  a:"Staff at a Quaker-run school dragged an eight-year-old out from under a bed, tied her into a chair, and cut off her braid — she wrote it all down in 1900, in The Atlantic, in English they had taught her — and three generations of Indiana Quakers, my church among them, did not assign the reading.",
+  m:[1,4], n:"Two agents restored: the staff who cut, and the church that declined to read."},
+ {d:"Children & Schools", p:"This history has only recently come to light.",
+  a:"The survivors testified all along; institutions declined to collect, teach, or believe the testimony. The light was available. The shutters were ours.",
+  m:[1,4], n:"'Come to light' makes the truth the actor. The survivors were the actors; the institutions were the shutters."},
+ {d:"Languages & Ceremonies", p:"Most Native languages have been lost.",
+  a:"Schools punished children for speaking their languages, generation after generation, as policy — and the languages that survive today survive because Native families kept teaching them in defiance of that policy, the way Trisha's older sister taught her.",
+  m:[1,2,3], n:"'Lost' is a weather word. Punishment is a policy, and survival is an act."},
+ {d:"Languages & Ceremonies", p:"Traditional ceremonies faded away over time.",
+  a:"The federal Code of Indian Offenses criminalized Native ceremonies beginning in the 1880s, and full legal protection did not come until the American Indian Religious Freedom Act of 1978 — within my adult lifetime. The ceremonies did not fade; they were prohibited, and practiced anyway, in hiding, at legal risk — which is why being invited to one now, as Bear Creek is invited to Prairie Awakening, is not entertainment but trust.",
+  m:[1,2,3,4], n:"Statute named, dates attached, and the speaker's own lifetime inside the timeline."},
+ {d:"The Women", p:"Native women go missing at terrible rates.",
+  a:"Men — disproportionately non-Native men, many from the man camps that pipeline construction brings — target Native women, and for decades the Supreme Court's Oliphant decision stripped tribes of jurisdiction to prosecute non-Native offenders on their own land, so the targeting carried little risk. Congress began restoring that jurisdiction only in 2013 and 2022. The epidemic has authors, and it had a legal shelter, and the shelter was built by our courts.",
+  m:[1,2,3], n:"'Go missing' has no one doing the taking. The active version names the authors and their legal shelter."},
+ {d:"The Women", p:"Awareness of MMIW has been growing.",
+  a:"Native women grew it. Sikowis and Donnielle carried it to a Minneapolis stage; Trisha carried it to the Waterloo Courier; Foxy carried the poster ninety-four miles past every fencepost and windshield in five counties. Awareness did not grow. It was hauled.",
+  m:[1], n:"Even the hopeful sentences need the conversion — growth has growers."},
+ {d:"The Knowledge", p:"Indigenous agricultural knowledge was largely forgotten.",
+  a:"Settler institutions dismissed it — the forum handout that called a thousand years of maize breeding 'simple agriculture' was doing, politely, in 2018, what the land-grant curriculum did for a century — while the knowledge itself remained alive in the communities that were never asked. It was not forgotten. It was declined.",
+  m:[1,2,3], n:"'Forgotten' blames memory. 'Declined' names a decision that is still being made."},
+ {d:"The Self", p:"I never learned any of this.",
+  a:"This history was withheld from me, by institutions that are still standing, some of which I belong to and one of which I am writing for now.",
+  m:[1,2,3,4], n:"The conversion applied to one's own innocence — the hardest and most necessary case."}
+];
+const MOVES = {1:["b1","Agent"],2:["b2","Mechanism"],3:["b3","Present tense"],4:["b4","Yourself"]};
+const doms = [...new Set(DATA.map(x=>x.d))];
+let filter = "All";
+const fdiv = document.getElementById('filters');
+["All",...doms].forEach(d=>{
+  const b=document.createElement('button');
+  b.className='fbtn'+(d==="All"?" on":"");
+  b.textContent=d;
+  b.onclick=()=>{filter=d;[...fdiv.children].forEach(c=>c.classList.toggle('on',c.textContent===d));render();};
+  fdiv.appendChild(b);
+});
+function render(){
+  const host=document.getElementById('pairs'); host.innerHTML='';
+  DATA.forEach((x,i)=>{
+    if(filter!=="All"&&x.d!==filter)return;
+    const el=document.createElement('div'); el.className='pair'; el.id='pair'+i;
+    el.innerHTML = `<span class="dom">${x.d}</span>
+      <div class="voice pv"><div class="label">Passive — as it was taught</div>${x.p}</div>
+      <div class="voice av"><div class="label">Active — as it happened, and happens</div>${x.a}</div>
+      <div class="convertbar">
+        <button class="cbtn" onclick="toggle(${i})">Convert</button>
+        <div class="badges">${x.m.map(k=>`<span class="badge ${MOVES[k][0]}">${MOVES[k][1]}</span>`).join('')}</div>
+      </div>
+      <div class="note">${x.n}</div>`;
+    host.appendChild(el);
+    if(converted.has(i)){el.classList.add('converted');el.querySelector('.cbtn').textContent='Back to the passive voice';}
+  });
+}
+const converted = new Set();
+function toggle(i){
+  const el=document.getElementById('pair'+i);
+  if(converted.has(i)){converted.delete(i);el.classList.remove('converted');el.querySelector('.cbtn').textContent='Convert';}
+  else{converted.add(i);el.classList.add('converted');el.querySelector('.cbtn').textContent='Back to the passive voice';}
+}
+function convertAll(on){
+  DATA.forEach((x,i)=>{if(on)converted.add(i);else converted.delete(i);});
+  render();
+}
+function assemble(){
+  const g=id=>document.getElementById(id).value.trim();
+  const parts=[];
+  if(g('t1'))parts.push(g('t1').replace(/\.$/,''));
+  if(g('t2'))parts.push("by means of "+g('t2').replace(/\.$/,''));
+  if(g('t3'))parts.push("and the value is here now — "+g('t3').replace(/\.$/,''));
+  if(g('t4'))parts.push("And I am in the sentence: "+g('t4').replace(/\.$/,''));
+  const out=document.getElementById('assembled');
+  if(!parts.length){out.style.display='block';out.textContent='Answer at least one of the four questions above, then assemble.';return;}
+  out.style.display='block';
+  out.innerHTML = `<div class="label" style="font-size:.85em;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#3f6b4f;margin-bottom:6px">Your active sentence — a draft to say aloud</div>` + parts.join('. ') + '.';
+}
+function verdict(){
+  const n=[...document.querySelectorAll('.checks input')].filter(c=>c.checked).length;
+  const v=document.getElementById('verdict');
+  const msgs=["0 of 4 — this is the old silence, upgraded.",
+              "1 of 4 — a start; the sentence is still protecting someone.",
+              "2 of 4 — half a conversion; it names the past but not the holdings.",
+              "3 of 4 — nearly there; what is the line item?",
+              "4 of 4 — this is a commitment, not an acknowledgment."];
+  v.textContent=msgs[n];
+  v.classList.toggle('good',n===4);
+}
+render();
+
+/* ---------- tabs ---------- */
+const PANELS=[...document.querySelectorAll('.panel')];
+const BLURB={"p-moves":"The four questions every conversion answers.","p-conversions":"Passive sentences as they were taught, converted.","p-try":"Convert a sentence of your own.","p-audit":"Check a land acknowledgment or a minute.","p-resources":"Money, land, labor, institutional weight, story."};
+const tl=document.getElementById('tablist');
+PANELS.forEach((p,i)=>{
+  const b=document.createElement('button'); b.className='tab'; b.type='button'; b.setAttribute('role','tab');
+  b.id='tab-'+p.id; b.setAttribute('aria-controls',p.id); b.textContent=p.dataset.short||p.dataset.title;
+  b.onclick=()=>showTab(i); tl.appendChild(b);
+  p.setAttribute('role','tabpanel'); p.setAttribute('aria-labelledby',b.id);
+  const nav=document.createElement('div'); nav.className='stepnav';
+  nav.innerHTML='<button type="button" class="fbtn"'+(i?'':' disabled')+'>← '+(i?PANELS[i-1].dataset.title:'')+'</button>'
+    +'<button type="button" class="fbtn"'+(i<PANELS.length-1?'':' disabled')+'>'+(i<PANELS.length-1?PANELS[i+1].dataset.title:'')+' →</button>';
+  nav.children[0].onclick=()=>showTab(i-1); nav.children[1].onclick=()=>showTab(i+1);
+  p.appendChild(nav);
+});
+document.getElementById('intro-map').innerHTML=PANELS.slice(1).map((p,i)=>'<button type="button" data-i="'+(i+1)+'"><b>'+(i+1)+' · '+p.dataset.title+'</b><span>'+BLURB[p.id]+'</span></button>').join('');
+document.getElementById('intro-map').onclick=e=>{const b=e.target.closest('button'); if(b) showTab(+b.dataset.i);};
+let cur=0;
+function showTab(i,focus){
+  if(i<0||i>=PANELS.length) return; cur=i;
+  PANELS.forEach((p,j)=>{ p.hidden=j!==i; const t=document.getElementById('tab-'+p.id); t.setAttribute('aria-selected',j===i); t.tabIndex=j===i?0:-1; if(j===i){ if(focus) t.focus(); t.scrollIntoView({block:'nearest',inline:'nearest'}); } });
+  try{ history.replaceState(null,'','#'+PANELS[i].id.slice(2)); }catch(e){}
+  window.scrollTo(0,0);
+}
+tl.addEventListener('keydown',e=>{ if(e.key==='ArrowRight'){e.preventDefault();showTab(Math.min(cur+1,PANELS.length-1),true);} if(e.key==='ArrowLeft'){e.preventDefault();showTab(Math.max(cur-1,0),true);} });
+const start=PANELS.findIndex(p=>p.id==='p-'+(location.hash||'').slice(1));
+showTab(start>0?start:0);
+</script>
+</body>
+</html>
